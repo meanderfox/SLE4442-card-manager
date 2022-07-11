@@ -9,12 +9,12 @@ from smartcard.scard import *
 import smartcard.util
 
 SELECT = [0xFF, 0xA4, 0x00, 0x00, 0x01, 0x06]
-LEGGI = [0xFF, 0xB0, 0x00] # aggiungere indirizzo e lunghezza
-SCRIVI = [0xFF, 0xD0, 0x00] # aggiungere indirizzo, lunghezza e bytes
-PROTEGGI = [0xFF, 0xD1, 0x00] # aggiungere indirizzo, lunghezza e bytes
-SBLOCCA_SCRITTURA = [0xFF, 0x20, 0x00, 0x00, 0x03] # aggiungi PIN
-CAMBIA_PIN = [0xFF, 0xD2, 0x00, 0x01, 0x03] # aggiungi PIN
-LEGGI_PROT = [0xFF, 0xB2, 0x00, 0x00, 0x04]
+READ = [0xFF, 0xB0, 0x00]  # add address and length
+WRITE = [0xFF, 0xD0, 0x00]  # add address, length, and bytes
+PROTECT = [0xFF, 0xD1, 0x00]  # add address, length, and bytes
+UNLOCK_WRITE = [0xFF, 0x20, 0x00, 0x00, 0x03]  # add PIN
+CHANGE_PIN = [0xFF, 0xD2, 0x00, 0x01, 0x03]  # write PIN
+READ_PROT = [0xFF, 0xB2, 0x00, 0x00, 0x04]
 
 PIN = ''
 
@@ -28,23 +28,22 @@ class MyUi(QtWidgets.QMainWindow):
         self.dwActiveProtocol = None
         self.hcontext = None
         self.reader = None
-        self.setWindowTitle('sle4442 manager')
+        self.setWindowTitle('SLE4442 Manager')
         self.PIN_PROT = [self.ui.bit_8, self.ui.bit_7, self.ui.bit_6, self.ui.bit_5, self.ui.bit_4, self.ui.bit_3, self.ui.bit_2, self.ui.bit_1,
-            self.ui.bit_16, self.ui.bit_15, self.ui.bit_14, self.ui.bit_13, self.ui.bit_12, self.ui.bit_11, self.ui.bit_10, self.ui.bit_9,
-            self.ui.bit_24, self.ui.bit_23, self.ui.bit_22, self.ui.bit_21, self.ui.bit_20, self.ui.bit_19, self.ui.bit_18, self.ui.bit_17,
-            self.ui.bit_32, self.ui.bit_31, self.ui.bit_30, self.ui.bit_29, self.ui.bit_28, self.ui.bit_27, self.ui.bit_26, self.ui.bit_25 ]
+                         self.ui.bit_16, self.ui.bit_15, self.ui.bit_14, self.ui.bit_13, self.ui.bit_12, self.ui.bit_11, self.ui.bit_10, self.ui.bit_9,
+                         self.ui.bit_24, self.ui.bit_23, self.ui.bit_22, self.ui.bit_21, self.ui.bit_20, self.ui.bit_19, self.ui.bit_18, self.ui.bit_17,
+                         self.ui.bit_32, self.ui.bit_31, self.ui.bit_30, self.ui.bit_29, self.ui.bit_28, self.ui.bit_27, self.ui.bit_26, self.ui.bit_25]
 
         # segnali
-        self.ui.leggi.clicked.connect(self.leggi_tutto)
-        self.ui.scrivi.clicked.connect(self.scrivi_tutto)
-        self.ui.connetti.clicked.connect(self.connetti)
-        self.ui.disconnetti.clicked.connect(self.disconnetti)
-        self.ui.sblocca.clicked.connect(self.sblocca)
-        self.ui.change_pin.clicked.connect(self.cambia_pin)
-        self.ui.proteggi.clicked.connect(self.proteggi_byte)
+        self.ui.read.clicked.connect(self.read_all)
+        self.ui.write.clicked.connect(self.write_all)
+        self.ui.connect.clicked.connect(self.connect)
+        self.ui.disconnect.clicked.connect(self.disconnect)
+        self.ui.unlock.clicked.connect(self.unlock)
+        self.ui.change_pin.clicked.connect(self.change_pin)
+        self.ui.protect.clicked.connect(self.protect_byte)
 
-
-    def connetti(self):
+    def connect(self):
         try:
             hresult, self.hcontext = SCardEstablishContext(SCARD_SCOPE_USER)
             if hresult != SCARD_S_SUCCESS:
@@ -73,133 +72,132 @@ class MyUi(QtWidgets.QMainWindow):
                         hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, SELECT)
                         if hresult != SCARD_S_SUCCESS:
                             raise Exception('Failed to transmit: ' + SCardGetErrorMessage(hresult))
-                        self.ui.stato_carta.setStyleSheet('color: black')
-                        self.ui.stato_carta.setText('carta connessa in lettura')
-                        self.ui.scrivi.setEnabled(False)
+                        self.ui.card_status.setStyleSheet('color: black')
+                        self.ui.card_status.setText('Connected to card: Read Only')
+                        self.ui.write.setEnabled(False)
                         self.ui.change_pin.setEnabled(False)
-                        self.ui.proteggi.setEnabled(False)
-                        self.ui.proteggi_n.setEnabled(False)
-                        print('Carta correttamente inizializzata')
+                        self.ui.protect.setEnabled(False)
+                        self.ui.protect_n.setEnabled(False)
+                        print('Card successfully initialized')
                     except Exception as message:
                         print("Exception:", message)
 
                 except Exception as message:
-                        print("Exception:", message)
+                    print("Exception:", message)
 
             except Exception as message:
-                        print("Exception:", message)
+                print("Exception:", message)
 
         except Exception as message:
             print("Exception:", message)
 
-
-    def proteggi_byte(self):
+    def protect_byte(self):
         try:
-            byte = self.ui.proteggi_n.value()-1
-            hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, LEGGI + [byte, 1])
+            byte = self.ui.protect_n.value() - 1
+            hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, READ + [byte, 1])
             if hresult != SCARD_S_SUCCESS:
                 raise Exception('Failed to transmit: ' + SCardGetErrorMessage(hresult))
             risultato = response[0]
             try:
-                hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, PROTEGGI + [byte, 1, risultato])
+                hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, PROTECT + [byte, 1, risultato])
                 if hresult != SCARD_S_SUCCESS:
                     raise Exception('Failed to transmit: ' + SCardGetErrorMessage(hresult))
                 if (response[-2] == 144):
-                    self.ui.statusbar.showMessage('protetto byte ' + str(byte+1), 4000)
+                    self.ui.statusbar.showMessage('protetto byte ' + str(byte + 1), 4000)
             except Exception as message:
                 print("Exception:", message)
         except Exception as message:
             print("Exception:", message)
 
-    def leggi_tutto(self):
+    def read_all(self):
         try:
-            hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, LEGGI + [0, 255])
+            hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, READ + [0, 255])
             if hresult != SCARD_S_SUCCESS:
                 raise Exception('Failed to transmit: ' + SCardGetErrorMessage(hresult))
             if (response[-2] == 144):
                 risultato = response[0:-2]
                 for i in range(255):
-                    self.ui.dati.setItem(i/8,i%8,QtWidgets.QTableWidgetItem(chr(risultato[i])))
+                    self.ui.dati.setItem(i / 8, i % 8, QtWidgets.QTableWidgetItem(chr(risultato[i])))
                 self.ui.statusbar.showMessage('lettura effettuata', 4000)
         except Exception as message:
             print("Exception:", message)
-        
+
         try:
-            hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol,LEGGI_PROT)
+            hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, READ_PROT)
             if hresult != SCARD_S_SUCCESS:
                 raise Exception('Failed to transmit: ' + SCardGetErrorMessage(hresult))
             if (response[-2] == 144):
-                risultato = bin(response[0])[2:]+bin(response[1])[2:]+bin(response[2])[2:]+bin(response[3])[2:]
+                risultato = bin(response[0])[2:] + bin(response[1])[2:] + bin(response[2])[2:] + bin(response[3])[2:]
                 for i in range(32):
                     if risultato[i] == "1":
                         self.PIN_PROT[i].setChecked(False)
-                        byte = (i/8)*8+8-(i%8)-1
-                        self.ui.dati.item(byte/8,byte%8).setBackground(QtGui.QColor(240,240,240))
+                        byte = (i / 8) * 8 + 8 - (i % 8) - 1
+                        self.ui.dati.item(byte / 8, byte % 8).setBackground(QtGui.QColor(240, 240, 240))
                     elif risultato[i] == "0":
                         self.PIN_PROT[i].setChecked(True)
-                        byte = (i/8)*8+8-(i%8)-1
-                        self.ui.dati.item(byte/8,byte%8).setBackground(QtGui.QColor(150,100,100))
+                        byte = (i / 8) * 8 + 8 - (i % 8) - 1
+                        self.ui.dati.item(byte / 8, byte % 8).setBackground(QtGui.QColor(150, 100, 100))
                     else:
                         raise Exception('Errore nella lettura dello stato di protezione dei byte')
 
         except Exception as message:
             print("Exception:", message)
 
-    def scrivi_tutto(self):
+    def write_all(self):
         risultato = []
         for i in range(255):
-            c = self.ui.dati.item(i/8,i%8).text()
+            c = self.ui.dati.item(i / 8, i % 8).text()
             if c == '':
                 v = 0x00
             else:
                 v = ord(str(c))
             risultato.append(v)
         try:
-            hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, SCRIVI + [0, 255] + risultato)
+            hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, WRITE + [0, 255] + risultato)
             if hresult != SCARD_S_SUCCESS:
                 raise Exception('Failed to transmit: ' + SCardGetErrorMessage(hresult))
             if (response[-2] == 144):
-                self.ui.statusbar.showMessage('scrittura corretta', 4000)
+                self.ui.statusbar.showMessage('write correct', 4000)
         except Exception as message:
             print("Exception:", message)
 
-    def sblocca(self):
+    def unlock(self):
         try:
             PIN = str(self.ui.pin.text())
             if len(PIN) != 3:
-                self.ui.stato_carta.setStyleSheet('color: red')
-                self.ui.stato_carta.setText('pin di tre caratteri')
+                self.ui.card_status.setStyleSheet('color: red')
+                self.ui.card_status.setText('pin di tre caratteri')
             else:
-                hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, SBLOCCA_SCRITTURA + smartcard.util.toASCIIBytes(PIN))
+                hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, UNLOCK_WRITE + smartcard.util.toASCIIBytes(PIN))
                 if hresult != SCARD_S_SUCCESS:
                     raise Exception('Failed to transmit: ' + SCardGetErrorMessage(hresult))
                 if response[-1] == 7:
-                    self.ui.stato_carta.setStyleSheet('color: green')
-                    self.ui.stato_carta.setText('carta sbloccata')
-                    self.ui.scrivi.setEnabled(True)
+                    self.ui.card_status.setStyleSheet('color: green')
+                    self.ui.card_status.setText('card unlocked')
+                    self.ui.write.setEnabled(True)
                     self.ui.change_pin.setEnabled(True)
-                    self.ui.proteggi.setEnabled(True)
-                    self.ui.proteggi_n.setEnabled(True)
-                    print("carta sbloccata e pronta per la scrittura")
+                    self.ui.protect.setEnabled(True)
+                    self.ui.protect_n.setEnabled(True)
+                    print("Card unlocked and ready to write")
                 elif response[-1] == 0:
                     print("carta bloccata")
-                    self.ui.stato_carta.setStyleSheet('color: red')
-                    self.ui.stato_carta.setText('carta bloccata')
+                    self.ui.card_status.setStyleSheet('color: red')
+                    self.ui.card_status.setText('carta bloccata')
                 else:
                     print("pin errato")
-                    self.ui.stato_carta.setStyleSheet('color: red')
-                    self.ui.stato_carta.setText('pin errato')
+                    self.ui.card_status.setStyleSheet('color: red')
+                    self.ui.card_status.setText('pin errato')
 
         except Exception as message:
             print("Exception:", message)
 
-    def cambia_pin(self):
+    def change_pin(self):
         try:
             PIN = str(self.ui.pin.text())
             if len(PIN) != 3:
-                self.ui.stato_carta.setText('pin di tre caratteri')
+                self.ui.card_status.setText('pin di tre caratteri')
             else:
-                hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, CAMBIA_PIN + smartcard.util.toASCIIBytes(PIN))
+                hresult, response = SCardTransmit(self.hcard, self.dwActiveProtocol, CHANGE_PIN + smartcard.util.toASCIIBytes(PIN))
                 if hresult != SCARD_S_SUCCESS:
                     raise Exception('Failed to transmit: ' + SCardGetErrorMessage(hresult))
                 if (response[-2] == 144):
@@ -208,18 +206,18 @@ class MyUi(QtWidgets.QMainWindow):
         except Exception as message:
             print("Exception:", message)
 
-    def disconnetti(self):
+    def disconnect(self):
         try:
             hresult = SCardDisconnect(self.hcard, SCARD_UNPOWER_CARD)
             if hresult != SCARD_S_SUCCESS:
                 raise Exception('Failed to disconnect: ' + SCardGetErrorMessage(hresult))
             print('Disconnected')
-            self.ui.stato_carta.setStyleSheet('color: black')
-            self.ui.stato_carta.setText('carta disconnessa')
-            self.ui.scrivi.setEnabled(False)
+            self.ui.card_status.setStyleSheet('color: black')
+            self.ui.card_status.setText('carta disconnessa')
+            self.ui.write.setEnabled(False)
             self.ui.change_pin.setEnabled(False)
-            self.ui.proteggi.setEnabled(False)
-            self.ui.proteggi_n.setEnabled(False)
+            self.ui.protect.setEnabled(False)
+            self.ui.protect_n.setEnabled(False)
             try:
                 hresult = SCardReleaseContext(self.hcontext)
                 if hresult != SCARD_S_SUCCESS:

@@ -36,7 +36,7 @@
      <bool>false</bool>
     </attribute>
     <attribute name="horizontalHeaderDefaultSectionSize">
-     <number>52</number>
+     <number>57</number>
     </attribute>
     <row/>
     <row/>
@@ -79,7 +79,7 @@
     <column/>
     <column/>
    </widget>
-   <widget class="QPushButton" name="leggi">
+   <widget class="QPushButton" name="read">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -89,10 +89,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>leggi</string>
+     <string>read</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="connetti">
+   <widget class="QPushButton" name="connect">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -102,10 +102,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>connetti</string>
+     <string>connect</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="disconnetti">
+   <widget class="QPushButton" name="disconnect">
     <property name="geometry">
      <rect>
       <x>140</x>
@@ -115,10 +115,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>disconnetti</string>
+     <string>disconnect</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="sblocca">
+   <widget class="QPushButton" name="unlock">
     <property name="geometry">
      <rect>
       <x>140</x>
@@ -128,7 +128,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>sblocca</string>
+     <string>unlock</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="pin">
@@ -157,7 +157,7 @@
      <string>PIN</string>
     </property>
    </widget>
-   <widget class="QLabel" name="stato_carta">
+   <widget class="QLabel" name="card_status">
     <property name="geometry">
      <rect>
       <x>100</x>
@@ -173,7 +173,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QPushButton" name="scrivi">
+   <widget class="QPushButton" name="write">
     <property name="enabled">
      <bool>false</bool>
     </property>
@@ -186,7 +186,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>scrivi</string>
+     <string>write</string>
     </property>
    </widget>
    <widget class="QPushButton" name="change_pin">
@@ -202,7 +202,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>cambia PIN</string>
+     <string>change PIN</string>
     </property>
    </widget>
    <widget class="QCheckBox" name="bit_1">
@@ -631,7 +631,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Byte protetti</string>
+     <string>Protected Bytes</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
@@ -738,7 +738,7 @@
      <string>32</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="proteggi_n">
+   <widget class="QSpinBox" name="protect_n">
     <property name="enabled">
      <bool>false</bool>
     </property>
@@ -757,7 +757,7 @@
      <number>32</number>
     </property>
    </widget>
-   <widget class="QPushButton" name="proteggi">
+   <widget class="QPushButton" name="protect">
     <property name="enabled">
      <bool>false</bool>
     </property>
@@ -770,7 +770,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>proteggi</string>
+     <string>protect</string>
     </property>
    </widget>
   </widget>
@@ -780,7 +780,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
@@ -789,6 +789,6 @@
  <resources/>
  <connections/>
  <slots>
-  <slot>leggi()</slot>
+  <slot>read()</slot>
  </slots>
 </ui>
