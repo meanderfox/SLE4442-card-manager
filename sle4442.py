@@ -103,7 +103,7 @@ class MyUi(QtWidgets.QMainWindow):
                 if hresult != SCARD_S_SUCCESS:
                     raise Exception('Failed to transmit: ' + SCardGetErrorMessage(hresult))
                 if (response[-2] == 144):
-                    self.ui.statusbar.showMessage('protetto byte ' + str(byte + 1), 4000)
+                    self.ui.statusbar.showMessage('protected byte ' + str(byte + 1), 4000)
             except Exception as message:
                 print("Exception:", message)
         except Exception as message:
@@ -118,7 +118,7 @@ class MyUi(QtWidgets.QMainWindow):
                 risultato = response[0:-2]
                 for i in range(255):
                     self.ui.dati.setItem(i / 8, i % 8, QtWidgets.QTableWidgetItem(chr(risultato[i])))
-                self.ui.statusbar.showMessage('lettura effettuata', 4000)
+                self.ui.statusbar.showMessage('Read Complete', 4000)
         except Exception as message:
             print("Exception:", message)
 
@@ -138,7 +138,7 @@ class MyUi(QtWidgets.QMainWindow):
                         byte = (i / 8) * 8 + 8 - (i % 8) - 1
                         self.ui.dati.item(byte / 8, byte % 8).setBackground(QtGui.QColor(150, 100, 100))
                     else:
-                        raise Exception('Errore nella lettura dello stato di protezione dei byte')
+                        raise Exception('Error in reading the protection status of the bytes')
 
         except Exception as message:
             print("Exception:", message)
@@ -180,13 +180,13 @@ class MyUi(QtWidgets.QMainWindow):
                     self.ui.protect_n.setEnabled(True)
                     print("Card unlocked and ready to write")
                 elif response[-1] == 0:
-                    print("carta bloccata")
+                    print("card locked")
                     self.ui.card_status.setStyleSheet('color: red')
-                    self.ui.card_status.setText('carta bloccata')
+                    self.ui.card_status.setText('card locked')
                 else:
-                    print("pin errato")
+                    print("wrong pin")
                     self.ui.card_status.setStyleSheet('color: red')
-                    self.ui.card_status.setText('pin errato')
+                    self.ui.card_status.setText('wrong pin')
 
         except Exception as message:
             print("Exception:", message)
@@ -201,7 +201,7 @@ class MyUi(QtWidgets.QMainWindow):
                 if hresult != SCARD_S_SUCCESS:
                     raise Exception('Failed to transmit: ' + SCardGetErrorMessage(hresult))
                 if (response[-2] == 144):
-                    self.ui.statusbar.showMessage('PIN modificato', 4000)
+                    self.ui.statusbar.showMessage('PIN changed', 4000)
 
         except Exception as message:
             print("Exception:", message)
@@ -213,7 +213,7 @@ class MyUi(QtWidgets.QMainWindow):
                 raise Exception('Failed to disconnect: ' + SCardGetErrorMessage(hresult))
             print('Disconnected')
             self.ui.card_status.setStyleSheet('color: black')
-            self.ui.card_status.setText('carta disconnessa')
+            self.ui.card_status.setText('Card Disconnected')
             self.ui.write.setEnabled(False)
             self.ui.change_pin.setEnabled(False)
             self.ui.protect.setEnabled(False)
