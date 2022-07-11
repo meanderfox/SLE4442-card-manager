@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets
 
 from card_ui import Ui_MainWindow
 
